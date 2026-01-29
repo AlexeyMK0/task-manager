@@ -1,14 +1,16 @@
 package org.example;
 
-import org.example.Dto.TaskDto;
-import org.example.Operations.GetAllTasks;
-import org.example.Operations.GetTaskById;
-
-import java.util.List;
+import org.example.Operations.*;
 
 public interface TaskService {
 
-    GetTaskById.Response getTaskById(long id);
+    GetTask.Response getTask(GetTask.Request request);
 
     GetAllTasks.Response getAllTasks();
+
+    CreateTask.Response createTask(CreateTask.Request request);
+
+    UpdateTask.Response updateTask(UpdateTask.Request request);
+
+    DeleteTask.Response deleteTask(DeleteTask.Request request);
 }

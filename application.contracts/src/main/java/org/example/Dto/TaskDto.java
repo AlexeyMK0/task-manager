@@ -2,11 +2,13 @@ package org.example.Dto;
 
 import java.time.LocalDateTime;
 
-// TODO: add status and priority
+// TODO: change priority and status types to enum
 public record TaskDto(long id,
                       long creatorId,
                       long assignedUserId,
                       LocalDateTime createDateTime,
-                      LocalDateTime deadlineDateTime
+                      LocalDateTime deadlineDateTime,
+                      String priority,
+                      String status
 ) {
 }

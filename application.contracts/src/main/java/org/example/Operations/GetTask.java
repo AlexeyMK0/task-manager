@@ -2,7 +2,9 @@ package org.example.Operations;
 
 import org.example.Dto.TaskDto;
 
-public class GetTaskById {
+public class GetTask {
+    public static record Request(long id) {}
+
     public static abstract class Response {
         public static final class Success extends Response {
             public final TaskDto task;
