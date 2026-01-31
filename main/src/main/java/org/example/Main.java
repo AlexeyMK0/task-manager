@@ -12,7 +12,7 @@ public class Main {
     }
 
     @Bean
-    public TaskService taskService() {
-        return new DefaultTaskService();
+    public TaskService taskService(TaskRepository repository) {
+        return new DefaultTaskService(repository);
     }
 }

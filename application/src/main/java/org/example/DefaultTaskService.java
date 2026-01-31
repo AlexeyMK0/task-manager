@@ -3,31 +3,30 @@ package org.example;
 import org.example.Mapping.TaskMapper;
 import org.example.Operations.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 public class DefaultTaskService implements TaskService {
 
-    private final Map<Long, Task> repository = new HashMap<>();
+    private final TaskRepository repository;
 
-    private final AtomicLong currentTaskId = new AtomicLong();
+    public DefaultTaskService(TaskRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public GetTask.Response getTask(GetTask.Request request) {
         long id = request.id();
-        if (!repository.containsKey(id)) {
+        Optional<Task> task = repository.getTaskById(id);
+        if (task.isEmpty()) {
             return new GetTask.Response.Failure("task with id " + id + " not found");
         }
-
-        return new GetTask.Response.Success(
-                TaskMapper.MapToDto(repository.get(id)));
+        return new GetTask.Response.Success(TaskMapper.MapToDto(task.get()));
     }
 
     @Override
     public GetAllTasks.Response getAllTasks() {
         return new GetAllTasks.Response.Success(
-                repository.values().stream().map(TaskMapper::MapToDto).toList());
+                repository.getAllTasks().stream().map(TaskMapper::MapToDto).toList());
     }
 
     @Override
@@ -40,15 +39,15 @@ public class DefaultTaskService implements TaskService {
         }
 
         Task task = new Task(
-                currentTaskId.incrementAndGet(),
+                null,
                 request.creatorId(),
                 request.assignedUserId(),
                 Status.CREATED,
                 request.createDateTime(),
                 request.deadlineDateTime(),
                 priority);
-        repository.put(task.id(), task);
-        return new CreateTask.Response.Success(TaskMapper.MapToDto(task));
+        Task createdTask = repository.create(task);
+        return new CreateTask.Response.Success(TaskMapper.MapToDto(createdTask));
     }
 
     public UpdateTask.Response updateTask(UpdateTask.Request request) {
@@ -66,11 +65,12 @@ public class DefaultTaskService implements TaskService {
             return new UpdateTask.Response.Failure("Unknown importance level " + request.importance());
         }
 
-        if (!repository.containsKey(request.taskId())) {
+        Optional<Task> foundTask = repository.getTaskById(request.taskId());
+        if (foundTask.isEmpty()) {
             return new UpdateTask.Response.Failure("Task with id " + request.taskId() + " not found");
         }
 
-        Task task = repository.get(request.taskId());
+        Task task = foundTask.get();
         if (task.status() == Status.DONE) {
             return new UpdateTask.Response.Failure("Cannot update task. Status: " + task.status());
         }
@@ -83,18 +83,18 @@ public class DefaultTaskService implements TaskService {
                 request.createDateTime(),
                 request.deadlineDateTime(),
                 priority);
-        repository.put(task.id(), task);
+        task = repository.update(task);
 
         return new UpdateTask.Response.Success(TaskMapper.MapToDto(task));
     }
 
     @Override
     public DeleteTask.Response deleteTask(DeleteTask.Request request) {
-        long id = request.taskId();
-        if (!repository.containsKey(id)) {
+        Optional<Task> foundTask = repository.getTaskById(request.taskId());
+        if (foundTask.isEmpty()) {
             return new DeleteTask.Response.Failure("Task with id " + request.taskId() + " not found");
         }
-        repository.remove(id);
+        repository.delete(foundTask.get());
         return new DeleteTask.Response.Success();
     }
 }

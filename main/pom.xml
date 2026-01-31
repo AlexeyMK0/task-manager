@@ -34,6 +34,11 @@
         </dependency>
         <dependency>
             <groupId>org.example</groupId>
+            <artifactId>Persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.example</groupId>
             <artifactId>presentation.Http</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
