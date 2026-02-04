@@ -8,7 +8,7 @@ import java.util.Optional;
 @Repository
 public class PostgresTaskRepository implements TaskRepository {
 
-    private JpaTaskRepository taskRepository;
+    private final JpaTaskRepository taskRepository;
 
     public PostgresTaskRepository(JpaTaskRepository taskRepository) {
         this.taskRepository = taskRepository;
@@ -17,6 +17,15 @@ public class PostgresTaskRepository implements TaskRepository {
     @Override
     public List<Task> getAllTasks() {
         return taskRepository.findAll().stream().map(this::mapToTask).toList();
+    }
+
+    @Override
+    public List<Task> getAllTasksByAssignedUserIdAndStatus(Long assignedUserId, Status status) {
+        return taskRepository
+                .findByAssignedUserIdAndStatus(assignedUserId, status)
+                .stream()
+                .map(this::mapToTask)
+                .toList();
     }
 
     @Override

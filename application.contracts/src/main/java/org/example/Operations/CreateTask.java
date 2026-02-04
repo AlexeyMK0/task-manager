@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 public class CreateTask {
     public record Request(
-            long creatorId,
-            long assignedUserId,
+            Long creatorId,
+            Long assignedUserId,
             LocalDateTime createDateTime,
             LocalDateTime deadlineDateTime,
             String importance) {}

@@ -24,10 +24,10 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{taskId}")
     public ResponseEntity<TaskDto> getTask(
-            @PathVariable("id") long id) {
-        logger.info("Getting task by id=" + id);
+            @PathVariable("taskId") long id) {
+        logger.info("Getting task by taskId=" + id);
         GetTask.Response response = taskService.getTask(new GetTask.Request(id));
 
         return switch (response) {
@@ -78,14 +78,27 @@ public class TaskController {
         };
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{taskId}")
     public ResponseEntity<Void> deleteTask(
-            @PathVariable("id") long id) {
+            @PathVariable("taskId") long id) {
         logger.info("Called deleteTask");
         DeleteTask.Response response = taskService.deleteTask(new DeleteTask.Request(id));
         return switch (response) {
             case DeleteTask.Response.Success _ -> ResponseEntity.ok().build();
             case DeleteTask.Response.Failure failure ->
+                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+            default -> throw new IllegalArgumentException("unreachable state");
+        };
+    }
+
+    @PostMapping("/{taskId}/start")
+    public ResponseEntity<Void> startTask(
+            @PathVariable("taskId") long id) {
+        logger.info("Called startTask with taskId=" + id);
+        StartTask.Response response = taskService.startTask(new StartTask.Request(id));
+        return switch (response) {
+            case StartTask.Response.Success _ -> ResponseEntity.ok().build();
+            case StartTask.Response.Failure failure ->
                     ResponseEntity.badRequest().header("reason", failure.reason).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };

@@ -13,4 +13,6 @@ public interface TaskService {
     UpdateTask.Response updateTask(UpdateTask.Request request);
 
     DeleteTask.Response deleteTask(DeleteTask.Request request);
+
+    StartTask.Response startTask(StartTask.Request request);
 }
