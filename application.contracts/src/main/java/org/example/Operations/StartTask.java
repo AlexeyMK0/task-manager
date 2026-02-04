@@ -1,21 +1,13 @@
 package org.example.Operations;
 
-import org.example.Dto.TaskDto;
+public abstract class StartTask {
+    public record Request(long taskId) {}
 
-public class StartTask {
-    public static record Request(long taskId) {}
-
-    public static abstract class Response {
-        public static final class Success extends StartTask.Response {
+    public interface Response {
+        record Success() implements Response {
         }
 
-        public static final class Failure extends StartTask.Response {
-
-            public final String reason;
-
-            public Failure(String reason) {
-                this.reason = reason;
-            }
+        record Failure(String reason) implements Response {
         }
     }
 }

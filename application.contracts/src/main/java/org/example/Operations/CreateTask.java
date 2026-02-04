@@ -4,7 +4,7 @@ import org.example.Dto.TaskDto;
 
 import java.time.LocalDateTime;
 
-public class CreateTask {
+public abstract class CreateTask {
     public record Request(
             Long creatorId,
             Long assignedUserId,
@@ -12,21 +12,11 @@ public class CreateTask {
             LocalDateTime deadlineDateTime,
             String importance) {}
 
-    public static abstract class Response {
-        public static final class Success extends Response {
-            public final TaskDto createdTask;
-
-            public Success(TaskDto createdTask) {
-                this.createdTask = createdTask;
-            }
+    public interface Response {
+        record Success(TaskDto createdTask) implements Response  {
         }
 
-        public static final class Failure extends Response {
-            public final String reason;
-
-            public Failure(String reason) {
-                this.reason = reason;
-            }
+        record Failure(String reason) implements Response {
         }
     }
 }

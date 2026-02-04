@@ -4,23 +4,12 @@ import org.example.Dto.TaskDto;
 
 import java.util.List;
 
-public class GetAllTasks {
-    public static abstract class Response {
-        public static final class Success extends Response {
-            public final List<TaskDto> tasks;
-
-            public Success(List<TaskDto> tasks) {
-                this.tasks = tasks;
-            }
+public abstract class GetAllTasks {
+    public interface Response {
+        record Success(List<TaskDto> tasks) implements Response {
         }
 
-        public static final class Failure extends Response {
-
-            public final String reason;
-
-            public Failure(String reason) {
-                this.reason = reason;
-            }
+        record Failure(String reason) implements Response {
         }
     }
 }

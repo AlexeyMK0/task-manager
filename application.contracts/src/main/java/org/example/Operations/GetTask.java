@@ -2,25 +2,14 @@ package org.example.Operations;
 
 import org.example.Dto.TaskDto;
 
-public class GetTask {
-    public static record Request(long taskId) {}
+public abstract class GetTask {
+    public record Request(long taskId) {}
 
-    public static abstract class Response {
-        public static final class Success extends Response {
-            public final TaskDto task;
-
-            public Success(TaskDto task) {
-                this.task = task;
-            }
+    public interface Response {
+        record Success(TaskDto task) implements Response {
         }
 
-        public static final class Failure extends Response {
-
-            public final String reason;
-
-            public Failure(String reason) {
-                this.reason = reason;
-            }
+        record Failure(String reason) implements Response {
         }
     }
 }

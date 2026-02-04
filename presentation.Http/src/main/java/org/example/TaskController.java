@@ -31,9 +31,9 @@ public class TaskController {
         GetTask.Response response = taskService.getTask(new GetTask.Request(id));
 
         return switch (response) {
-            case GetTask.Response.Success success -> ResponseEntity.ok(success.task);
+            case GetTask.Response.Success success -> ResponseEntity.ok(success.task());
             case GetTask.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
@@ -44,9 +44,9 @@ public class TaskController {
         GetAllTasks.Response response = taskService.getAllTasks();
 
         return switch (response) {
-            case GetAllTasks.Response.Success success -> ResponseEntity.ok(success.tasks);
+            case GetAllTasks.Response.Success success -> ResponseEntity.ok(success.tasks());
             case GetAllTasks.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
@@ -58,9 +58,9 @@ public class TaskController {
         CreateTask.Response response = taskService.createTask(taskToCreate);
         return switch (response) {
             case CreateTask.Response.Success success ->
-                    ResponseEntity.status(HttpStatus.CREATED).body(success.createdTask);
+                    ResponseEntity.status(HttpStatus.CREATED).body(success.createdTask());
             case CreateTask.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
@@ -71,9 +71,9 @@ public class TaskController {
         logger.info("Called updateTask");
         UpdateTask.Response response = taskService.updateTask(taskToUpdate);
         return switch (response) {
-            case UpdateTask.Response.Success success -> ResponseEntity.ok(success.updatedTask);
+            case UpdateTask.Response.Success success -> ResponseEntity.ok(success.updatedTask());
             case UpdateTask.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
@@ -86,7 +86,7 @@ public class TaskController {
         return switch (response) {
             case DeleteTask.Response.Success _ -> ResponseEntity.ok().build();
             case DeleteTask.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
@@ -99,7 +99,7 @@ public class TaskController {
         return switch (response) {
             case StartTask.Response.Success _ -> ResponseEntity.ok().build();
             case StartTask.Response.Failure failure ->
-                    ResponseEntity.badRequest().header("reason", failure.reason).build();
+                    ResponseEntity.badRequest().header("reason", failure.reason()).build();
             default -> throw new IllegalArgumentException("unreachable state");
         };
     }
