@@ -1,5 +1,6 @@
 package org.example;
 
+import jakarta.validation.Valid;
 import org.example.Dto.TaskDto;
 import org.example.Operations.*;
 import org.slf4j.Logger;
@@ -53,7 +54,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskDto> createNewTask(
-            @RequestBody CreateTask.Request taskToCreate) {
+            @Valid @RequestBody CreateTask.Request taskToCreate) {
         logger.info("Called createTask");
         CreateTask.Response response = taskService.createTask(taskToCreate);
         return switch (response) {
@@ -67,7 +68,7 @@ public class TaskController {
 
     @PutMapping
     public ResponseEntity<TaskDto> updateTask(
-            @RequestBody UpdateTask.Request taskToUpdate) {
+            @Valid @RequestBody UpdateTask.Request taskToUpdate) {
         logger.info("Called updateTask");
         UpdateTask.Response response = taskService.updateTask(taskToUpdate);
         return switch (response) {

@@ -1,10 +1,13 @@
 package org.example;
 
-import org.example.Exceptions.*;
+import org.example.Exceptions.AppException;
+import org.example.Exceptions.TaskNotFoundException;
+import org.example.Exceptions.TaskOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -34,6 +37,20 @@ public class GlobalExceptionHandler {
 
         var responseDto = new ErrorResponseDto(
                 "Application exception",
+                exception.getMessage(),
+                LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(responseDto);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDto> MethodArgumentNotValidHandler(MethodArgumentNotValidException exception) {
+        logger.error("processing MethodArgumentNotValidException", exception);
+
+        var responseDto = new ErrorResponseDto(
+                "Invalid arguments",
                 exception.getMessage(),
                 LocalDateTime.now());
 
