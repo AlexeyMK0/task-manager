@@ -65,7 +65,8 @@ public class PostgresTaskRepository implements TaskRepository {
                 entity.getStatus(),
                 entity.getCreateDateTime(),
                 entity.getDeadlineDateTime(),
-                entity.getPriority()
+                entity.getPriority(),
+                entity.getDoneDateTime()
         );
     }
 
@@ -77,6 +78,7 @@ public class PostgresTaskRepository implements TaskRepository {
                 task.status(),
                 task.createDateTime(),
                 task.deadlineDateTime(),
-                task.priority());
+                task.priority(),
+                task.doneDateTime());
     }
 }

@@ -70,4 +70,12 @@ public class TaskController {
         taskService.startTask(new StartTask.Request(id));
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{taskId}/complete")
+    public ResponseEntity<Void> completeTask(
+            @PathVariable("taskId") long id) {
+        logger.info("Called completeTask with taskId=" + id);
+        taskService.completeTask(new CompleteTask.Request(id));
+        return ResponseEntity.ok().build();
+    }
 }

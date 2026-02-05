@@ -9,5 +9,7 @@ public record Task(
         Status status,
         LocalDateTime createDateTime,
         LocalDateTime deadlineDateTime,
-        Priority priority) {
+        Priority priority,
+        LocalDateTime doneDateTime
+        ) {
 }

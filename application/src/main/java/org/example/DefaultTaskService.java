@@ -7,6 +7,7 @@ import org.example.Exceptions.TaskOperationException;
 import org.example.Mapping.TaskMapper;
 import org.example.Operations.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class DefaultTaskService implements TaskService {
@@ -48,7 +49,8 @@ public class DefaultTaskService implements TaskService {
                 Status.CREATED,
                 request.createDateTime(),
                 request.deadlineDateTime(),
-                priority);
+                priority,
+                null);
         Task createdTask = repository.create(task);
         return TaskMapper.MapToDto(createdTask);
     }
@@ -79,6 +81,12 @@ public class DefaultTaskService implements TaskService {
             assertCanStartTask(task);
         }
 
+        LocalDateTime doneDateTime = null;
+        if (status == Status.DONE) {
+            assertCanFinishTask(task);
+            doneDateTime = LocalDateTime.now();
+        }
+
         task = new Task(
                 task.id(),
                 request.creatorId(),
@@ -86,7 +94,8 @@ public class DefaultTaskService implements TaskService {
                 status,
                 request.createDateTime(),
                 request.deadlineDateTime(),
-                priority);
+                priority,
+                doneDateTime);
         task = repository.update(task);
 
         return TaskMapper.MapToDto(task);
@@ -109,16 +118,39 @@ public class DefaultTaskService implements TaskService {
 
         assertCanStartTask(task);
 
-        Task startedTask = new Task(
+        var startedTask = new Task(
                 task.id(),
                 task.creatorId(),
                 task.assignedUserId(),
                 Status.IN_PROGRESS,
                 task.createDateTime(),
                 task.deadlineDateTime(),
-                task.priority()
-        );
+                task.priority(),
+                null);
         repository.update(startedTask);
+    }
+
+    @Override
+    public void completeTask(CompleteTask.Request request) {
+        Task task = repository.getTaskById(request.taskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
+        if (task.status() == Status.DONE) {
+            return;
+        }
+
+        assertCanFinishTask(task);
+
+        var finishedTask = new Task(
+                task.id(),
+                task.creatorId(),
+                task.assignedUserId(),
+                Status.DONE,
+                task.createDateTime(),
+                task.deadlineDateTime(),
+                task.priority(),
+                LocalDateTime.now()
+        );
+        repository.update(finishedTask);
     }
 
     private void assertCanStartTask(Task taskToStart) {
@@ -132,6 +164,12 @@ public class DefaultTaskService implements TaskService {
                 taskToStart.assignedUserId(), Status.IN_PROGRESS);
         if (tasksOfUser.size() >= userMaxTasks) {
             throw new TaskOperationException("Cannot start task for user with id=" + taskToStart.assignedUserId() + " -- already has " + userMaxTasks + " tasks");
+        }
+    }
+
+    private void assertCanFinishTask(Task taskToFinish) {
+        if (taskToFinish.assignedUserId() == null) {
+            throw new TaskOperationException("Cannot finish task with id=" + taskToFinish.id() + " -- user is not assigned");
         }
     }
 }

@@ -12,6 +12,7 @@ public class TaskMapper {
                 task.createDateTime(),
                 task.deadlineDateTime(),
                 task.priority().name(),
-                task.status().name());
+                task.status().name(),
+                task.doneDateTime());
     }
 }

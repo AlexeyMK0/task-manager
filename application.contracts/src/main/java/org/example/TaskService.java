@@ -18,4 +18,6 @@ public interface TaskService {
     void deleteTask(DeleteTask.Request request);
 
     void startTask(StartTask.Request request);
+
+    void completeTask(CompleteTask.Request request);
 }
