@@ -72,7 +72,7 @@ public class DefaultTaskService implements TaskService {
 
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
-        if (task.status() == Status.DONE) {
+        if (task.status() == Status.DONE && status != Status.IN_PROGRESS) {
             throw new TaskOperationException("Cannot update task. Status: " + task.status());
         }
 
@@ -156,9 +156,6 @@ public class DefaultTaskService implements TaskService {
     private void assertCanStartTask(Task taskToStart) {
         if (taskToStart.assignedUserId() == null) {
             throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- user is not assigned");
-        }
-        if (taskToStart.status() != Status.CREATED) {
-            throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- task status is " + taskToStart.status().name());
         }
 
         long numberOfTasks = repository.countTasksByAssignedUserIdAndStatus(
