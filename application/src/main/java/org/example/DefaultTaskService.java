@@ -1,10 +1,11 @@
 package org.example;
 
+import org.example.Exceptions.TaskNotFoundException;
+import org.example.Exceptions.TaskOperationException;
 import org.example.Mapping.TaskMapper;
 import org.example.Operations.*;
 
 import java.util.List;
-import java.util.Optional;
 
 public class DefaultTaskService implements TaskService {
 
@@ -19,12 +20,9 @@ public class DefaultTaskService implements TaskService {
 
     @Override
     public GetTask.Response getTask(GetTask.Request request) {
-        long id = request.taskId();
-        Optional<Task> task = repository.getTaskById(id);
-        if (task.isEmpty()) {
-            return new GetTask.Response.Failure("task with taskId " + id + " not found");
-        }
-        return new GetTask.Response.Success(TaskMapper.MapToDto(task.get()));
+        Task task = repository.getTaskById(request.taskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
+        return new GetTask.Response.Success(TaskMapper.MapToDto(task));
     }
 
     @Override
@@ -69,22 +67,15 @@ public class DefaultTaskService implements TaskService {
             return new UpdateTask.Response.Failure("Unknown importance level " + request.importance());
         }
 
-        Optional<Task> foundTask = repository.getTaskById(request.taskId());
-        if (foundTask.isEmpty()) {
-            return new UpdateTask.Response.Failure("Task with taskId " + request.taskId() + " not found");
-        }
-
-        Task task = foundTask.get();
+        Task task = repository.getTaskById(request.taskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
         if (task.status() == Status.DONE) {
-            return new UpdateTask.Response.Failure("Cannot update task. Status: " + task.status());
+            throw new TaskOperationException("Cannot update task. Status: " + task.status());
         }
 
         // Check if request starts the task
         if (task.status() != Status.IN_PROGRESS && status == Status.IN_PROGRESS) {
-            Optional<String> startFailureReason = isCanStartTask(task);
-            if (startFailureReason.isPresent()) {
-                return new UpdateTask.Response.Failure(startFailureReason.get());
-            }
+            assertCanStartTask(task);
         }
 
         task = new Task(
@@ -102,28 +93,21 @@ public class DefaultTaskService implements TaskService {
 
     @Override
     public DeleteTask.Response deleteTask(DeleteTask.Request request) {
-        Optional<Task> foundTask = repository.getTaskById(request.taskId());
-        if (foundTask.isEmpty()) {
-            return new DeleteTask.Response.Failure("Task with taskId " + request.taskId() + " not found");
-        }
-        repository.delete(foundTask.get());
+        Task task = repository.getTaskById(request.taskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
+        repository.delete(task);
         return new DeleteTask.Response.Success();
     }
 
     @Override
     public StartTask.Response startTask(StartTask.Request request) {
-        Optional<Task> foundTask = repository.getTaskById(request.taskId());
-        if (foundTask.isEmpty()) {
-            return new StartTask.Response.Failure("Task with taskId " + request.taskId() + " not found");
-        }
-        Task task = foundTask.get();
+        Task task = repository.getTaskById(request.taskId())
+                .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
         if (task.status() == Status.IN_PROGRESS) {
             return new StartTask.Response.Success();
         }
-        Optional<String> failureReason = isCanStartTask(task);
-        if (failureReason.isPresent()) {
-            return new StartTask.Response.Failure(failureReason.get());
-        }
+
+        assertCanStartTask(task);
 
         Task startedTask = new Task(
                 task.id(),
@@ -138,21 +122,17 @@ public class DefaultTaskService implements TaskService {
         return new StartTask.Response.Success();
     }
 
-    // returns failure reason
-    // empty if task can be started
-    private Optional<String> isCanStartTask(Task task) {
-        if (task.assignedUserId() == null) {
-            return Optional.of("Cannot start task with id=" + task.id() + " -- user is not assigned");
+    private void assertCanStartTask(Task taskToStart) {
+        if (taskToStart.assignedUserId() == null) {
+            throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- user is not assigned");
         }
-        if (task.status() != Status.CREATED) {
-            return Optional.of("Cannot start task with id=" + task.id() + " -- task status is " + task.status().name());
+        if (taskToStart.status() != Status.CREATED) {
+            throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- task status is " + taskToStart.status().name());
         }
         List<Task> tasksOfUser = repository.getAllTasksByAssignedUserIdAndStatus(
-                task.assignedUserId(), Status.IN_PROGRESS);
+                taskToStart.assignedUserId(), Status.IN_PROGRESS);
         if (tasksOfUser.size() >= userMaxTasks) {
-            return Optional.of("Cannot start task for user with id=" + task.assignedUserId() + " -- already has " + userMaxTasks + " tasks");
+            throw new TaskOperationException("Cannot start task for user with id=" + taskToStart.assignedUserId() + " -- already has " + userMaxTasks + " tasks");
         }
-
-        return Optional.empty();
     }
 }
