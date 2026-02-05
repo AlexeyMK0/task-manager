@@ -160,9 +160,10 @@ public class DefaultTaskService implements TaskService {
         if (taskToStart.status() != Status.CREATED) {
             throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- task status is " + taskToStart.status().name());
         }
-        List<Task> tasksOfUser = repository.getAllTasksByAssignedUserIdAndStatus(
+
+        long numberOfTasks = repository.countTasksByAssignedUserIdAndStatus(
                 taskToStart.assignedUserId(), Status.IN_PROGRESS);
-        if (tasksOfUser.size() >= userMaxTasks) {
+        if (numberOfTasks >= userMaxTasks) {
             throw new TaskOperationException("Cannot start task for user with id=" + taskToStart.assignedUserId() + " -- already has " + userMaxTasks + " tasks");
         }
     }

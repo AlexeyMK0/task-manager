@@ -20,12 +20,8 @@ public class PostgresTaskRepository implements TaskRepository {
     }
 
     @Override
-    public List<Task> getAllTasksByAssignedUserIdAndStatus(Long assignedUserId, Status status) {
-        return taskRepository
-                .findByAssignedUserIdAndStatus(assignedUserId, status)
-                .stream()
-                .map(this::mapToTask)
-                .toList();
+    public long countTasksByAssignedUserIdAndStatus(Long assignedUserId, Status status) {
+        return taskRepository.countByAssignedUserIdAndStatus(assignedUserId, status);
     }
 
     @Override
