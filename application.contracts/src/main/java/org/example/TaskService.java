@@ -1,18 +1,21 @@
 package org.example;
 
+import org.example.Dto.TaskDto;
 import org.example.Operations.*;
+
+import java.util.List;
 
 public interface TaskService {
 
-    GetTask.Response getTask(GetTask.Request request);
+    TaskDto getTask(GetTask.Request request);
 
-    GetAllTasks.Response getAllTasks();
+    List<TaskDto> getAllTasks();
 
-    CreateTask.Response createTask(CreateTask.Request request);
+    TaskDto createTask(CreateTask.Request request);
 
-    UpdateTask.Response updateTask(UpdateTask.Request request);
+    TaskDto updateTask(UpdateTask.Request request);
 
-    DeleteTask.Response deleteTask(DeleteTask.Request request);
+    void deleteTask(DeleteTask.Request request);
 
-    StartTask.Response startTask(StartTask.Request request);
+    void startTask(StartTask.Request request);
 }

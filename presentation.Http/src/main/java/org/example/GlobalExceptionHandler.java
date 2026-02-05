@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.Exceptions.AppException;
+import org.example.Exceptions.InvalidArgumentException;
 import org.example.Exceptions.TaskNotFoundException;
 import org.example.Exceptions.TaskOperationException;
 import org.slf4j.Logger;
@@ -39,6 +40,21 @@ public class GlobalExceptionHandler {
                 "Application exception",
                 exception.getMessage(),
                 LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(responseDto);
+    }
+
+    @ExceptionHandler(InvalidArgumentException.class)
+    public ResponseEntity<ErrorResponseDto> InvalidArgumentHandler(InvalidArgumentException exception) {
+        logger.error("processing InvalidArgumentException", exception);
+
+        var responseDto = new ErrorResponseDto(
+                "Invalid arguments",
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

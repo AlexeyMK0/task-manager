@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.Dto.TaskDto;
+import org.example.Exceptions.InvalidArgumentException;
 import org.example.Exceptions.TaskNotFoundException;
 import org.example.Exceptions.TaskOperationException;
 import org.example.Mapping.TaskMapper;
@@ -19,25 +21,24 @@ public class DefaultTaskService implements TaskService {
     }
 
     @Override
-    public GetTask.Response getTask(GetTask.Request request) {
+    public TaskDto getTask(GetTask.Request request) {
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
-        return new GetTask.Response.Success(TaskMapper.MapToDto(task));
+        return TaskMapper.MapToDto(task);
     }
 
     @Override
-    public GetAllTasks.Response getAllTasks() {
-        return new GetAllTasks.Response.Success(
-                repository.getAllTasks().stream().map(TaskMapper::MapToDto).toList());
+    public List<TaskDto> getAllTasks() {
+        return repository.getAllTasks().stream().map(TaskMapper::MapToDto).toList();
     }
 
     @Override
-    public CreateTask.Response createTask(CreateTask.Request request) {
+    public TaskDto createTask(CreateTask.Request request) {
         Priority priority;
         try {
             priority = Priority.valueOf(request.importance());
         } catch (IllegalArgumentException e) {
-            return new CreateTask.Response.Failure("Unknown importance level: " + request.importance());
+            throw new InvalidArgumentException("Unknown importance level: " + request.importance());
         }
 
         Task task = new Task(
@@ -49,22 +50,22 @@ public class DefaultTaskService implements TaskService {
                 request.deadlineDateTime(),
                 priority);
         Task createdTask = repository.create(task);
-        return new CreateTask.Response.Success(TaskMapper.MapToDto(createdTask));
+        return TaskMapper.MapToDto(createdTask);
     }
 
-    public UpdateTask.Response updateTask(UpdateTask.Request request) {
+    public TaskDto updateTask(UpdateTask.Request request) {
         Status status;
         try {
             status = Status.valueOf(request.status());
         } catch (IllegalArgumentException e) {
-            return new UpdateTask.Response.Failure("Unknown status " + request.status());
+            throw new InvalidArgumentException("Unknown status " + request.status());
         }
 
         Priority priority;
         try {
             priority = Priority.valueOf(request.importance());
         } catch (IllegalArgumentException e) {
-            return new UpdateTask.Response.Failure("Unknown importance level " + request.importance());
+            throw new InvalidArgumentException("Unknown importance level " + request.importance());
         }
 
         Task task = repository.getTaskById(request.taskId())
@@ -88,23 +89,22 @@ public class DefaultTaskService implements TaskService {
                 priority);
         task = repository.update(task);
 
-        return new UpdateTask.Response.Success(TaskMapper.MapToDto(task));
+        return TaskMapper.MapToDto(task);
     }
 
     @Override
-    public DeleteTask.Response deleteTask(DeleteTask.Request request) {
+    public void deleteTask(DeleteTask.Request request) {
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
         repository.delete(task);
-        return new DeleteTask.Response.Success();
     }
 
     @Override
-    public StartTask.Response startTask(StartTask.Request request) {
+    public void startTask(StartTask.Request request) {
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
         if (task.status() == Status.IN_PROGRESS) {
-            return new StartTask.Response.Success();
+            return;
         }
 
         assertCanStartTask(task);
@@ -119,7 +119,6 @@ public class DefaultTaskService implements TaskService {
                 task.priority()
         );
         repository.update(startedTask);
-        return new StartTask.Response.Success();
     }
 
     private void assertCanStartTask(Task taskToStart) {

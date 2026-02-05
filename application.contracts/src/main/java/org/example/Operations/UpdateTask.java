@@ -2,7 +2,6 @@ package org.example.Operations;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import org.example.Dto.TaskDto;
 
 import java.time.LocalDateTime;
 
@@ -18,12 +17,4 @@ public abstract class UpdateTask {
             @NotNull
             String importance,
             String status) {}
-
-    public interface Response {
-        record Success(TaskDto updatedTask) implements Response {
-        }
-
-        record Failure(String reason) implements Response {
-        }
-    }
 }

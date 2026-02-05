@@ -16,12 +16,4 @@ public abstract class CreateTask {
             LocalDateTime deadlineDateTime,
             @NotNull
             String importance) {}
-
-    public interface Response {
-        record Success(TaskDto createdTask) implements Response  {
-        }
-
-        record Failure(String reason) implements Response {
-        }
-    }
 }
