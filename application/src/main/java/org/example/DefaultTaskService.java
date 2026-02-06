@@ -41,11 +41,23 @@ public class DefaultTaskService implements TaskService {
 
     @Override
     public List<TaskDto> getAllTasks(GetAllTasks.Request request) {
+        List<Priority> priorities
+                = request.importanceList() == null
+                ? null
+                : request.importanceList().stream()
+                    .map(ImportanceMapper.INSTANCE::toDomain)
+                    .toList();
+        List<Status> statuses
+                = request.statusList() == null
+                ? null
+                : request.statusList().stream()
+                    .map(StatusMapper.INSTANCE::toDomain)
+                    .toList();
         var query = new Query(
-                request.creatorId(),
-                request.assignedUserId(),
-                ImportanceMapper.INSTANCE.toDomain(request.importance()),
-                StatusMapper.INSTANCE.toDomain(request.status()),
+                request.creatorIds(),
+                request.assignedUserIds(),
+                priorities,
+                statuses,
                 request.pageSize() == null ? defaultPageSize : request.pageSize(),
                 request.pageNum() == null ? defaultPageNum : request.pageNum());
         return repository

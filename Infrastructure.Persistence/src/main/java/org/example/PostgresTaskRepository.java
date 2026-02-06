@@ -26,8 +26,7 @@ public class PostgresTaskRepository implements TaskRepository {
                 .ofSize(query.pageSize())
                 .withPage(query.pageNum());
         return taskRepository
-                .searchAllByFilter(
-                        query.creatorId(), query.assignedUserId(), query.priority(), query.status(), pageable)
+                .findAll(TaskSpecifications.withQuery(query), pageable)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

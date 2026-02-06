@@ -36,19 +36,19 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskDto>> getAllTasks(
-            @RequestParam(name="creatorId", required = false) Long creatorId,
-            @RequestParam(name="assignedUserId", required = false) Long assignedUserId,
-            @RequestParam(name="importance", required = false) TaskImportance importance,
-            @RequestParam(name="status", required = false) TaskStatus status,
+            @RequestParam(name="creatorId", required = false) List<Long> creatorIds,
+            @RequestParam(name="assignedUserId", required = false) List<Long> assignedUserIds,
+            @RequestParam(name="importance", required = false) List<TaskImportance> importanceList,
+            @RequestParam(name="status", required = false) List<TaskStatus> statusList,
             @RequestParam(name="pageSize", required = false) Integer pageSize,
             @RequestParam(name="pageNum", required = false) Integer pageNum
     ) {
         logger.info("Getting all tasks");
         var request = new GetAllTasks.Request(
-                creatorId,
-                assignedUserId,
-                importance,
-                status,
+                creatorIds,
+                assignedUserIds,
+                importanceList,
+                statusList,
                 pageSize,
                 pageNum);
         List<TaskDto> response = taskService.getAllTasks(request);
