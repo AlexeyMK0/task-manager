@@ -9,7 +9,7 @@ public interface TaskService {
 
     TaskDto getTask(GetTask.Request request);
 
-    List<TaskDto> getAllTasks();
+    List<TaskDto> getAllTasks(GetAllTasks.Request request);
 
     TaskDto createTask(CreateTask.Request request);
 

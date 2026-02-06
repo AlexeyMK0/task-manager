@@ -2,6 +2,8 @@ package org.example;
 
 import jakarta.validation.Valid;
 import org.example.Dto.TaskDto;
+import org.example.Model.TaskImportance;
+import org.example.Model.TaskStatus;
 import org.example.Operations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +35,23 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskDto>> getAllTasks() {
+    public ResponseEntity<List<TaskDto>> getAllTasks(
+            @RequestParam(name="creatorId", required = false) Long creatorId,
+            @RequestParam(name="assignedUserId", required = false) Long assignedUserId,
+            @RequestParam(name="importance", required = false) TaskImportance importance,
+            @RequestParam(name="status", required = false) TaskStatus status,
+            @RequestParam(name="pageSize", required = false) Integer pageSize,
+            @RequestParam(name="pageNum", required = false) Integer pageNum
+    ) {
         logger.info("Getting all tasks");
-        List<TaskDto> response = taskService.getAllTasks();
+        var request = new GetAllTasks.Request(
+                creatorId,
+                assignedUserId,
+                importance,
+                status,
+                pageSize,
+                pageNum);
+        List<TaskDto> response = taskService.getAllTasks(request);
         return ResponseEntity.ok(response);
     }
 

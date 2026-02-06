@@ -1,6 +1,7 @@
 package org.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,8 +21,16 @@ public class PostgresTaskRepository implements TaskRepository {
     }
 
     @Override
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll().stream().map(mapper::toDomain).toList();
+    public List<Task> getAllTasks(Query query) {
+        var pageable = Pageable
+                .ofSize(query.pageSize())
+                .withPage(query.pageNum());
+        return taskRepository
+                .searchAllByFilter(
+                        query.creatorId(), query.assignedUserId(), query.priority(), query.status(), pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

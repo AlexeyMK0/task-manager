@@ -12,6 +12,12 @@ public class Main {
     @Value("${app.task.max-active-count:5}")
     private int userMaxTasks;
 
+    @Value("${app.page.default-size:5}")
+    private int defaultPageSize;
+
+    @Value("${app.page.default-num:0}")
+    private int defaultPageNum;
+
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
     }
@@ -19,6 +25,6 @@ public class Main {
     @Bean
     @Transactional
     public TaskService taskService(TaskRepository repository) {
-        return new DefaultTaskService(repository, userMaxTasks);
+        return new DefaultTaskService(repository, userMaxTasks, defaultPageSize, defaultPageNum);
     }
 }

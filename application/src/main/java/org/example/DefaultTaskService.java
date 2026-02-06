@@ -21,9 +21,15 @@ public class DefaultTaskService implements TaskService {
 
     private final int userMaxTasks;
 
-    public DefaultTaskService(TaskRepository repository, int userMaxTasks) {
+    private final int defaultPageSize;
+
+    private final int defaultPageNum;
+
+    public DefaultTaskService(TaskRepository repository, int userMaxTasks, int defaultPageSize, int defaultPageNum) {
         this.repository = repository;
         this.userMaxTasks = userMaxTasks;
+        this.defaultPageSize = defaultPageSize;
+        this.defaultPageNum = defaultPageNum;
     }
 
     @Override
@@ -34,8 +40,19 @@ public class DefaultTaskService implements TaskService {
     }
 
     @Override
-    public List<TaskDto> getAllTasks() {
-        return repository.getAllTasks().stream().map(TaskMapper::MapToDto).toList();
+    public List<TaskDto> getAllTasks(GetAllTasks.Request request) {
+        var query = new Query(
+                request.creatorId(),
+                request.assignedUserId(),
+                ImportanceMapper.INSTANCE.toDomain(request.importance()),
+                StatusMapper.INSTANCE.toDomain(request.status()),
+                request.pageSize() == null ? defaultPageSize : request.pageSize(),
+                request.pageNum() == null ? defaultPageNum : request.pageNum());
+        return repository
+                .getAllTasks(query)
+                .stream()
+                .map(TaskMapper::MapToDto)
+                .toList();
     }
 
     @Override
