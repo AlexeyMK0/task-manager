@@ -17,7 +17,5 @@ public abstract class UpdateTask {
             @Future
             LocalDateTime deadlineDateTime,
             @NotNull
-            TaskImportance importance,
-            @NotNull
-            TaskStatus status) {}
+            TaskImportance importance) {}
 }

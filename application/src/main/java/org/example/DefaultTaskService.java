@@ -7,11 +7,15 @@ import org.example.Mapping.ImportanceMapper;
 import org.example.Mapping.StatusMapper;
 import org.example.Mapping.TaskMapper;
 import org.example.Operations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class DefaultTaskService implements TaskService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultTaskService.class);
 
     private final TaskRepository repository;
 
@@ -52,35 +56,33 @@ public class DefaultTaskService implements TaskService {
     }
 
     public TaskDto updateTask(UpdateTask.Request request) {
-        Status status = StatusMapper.INSTANCE.toDomain(request.status());
-        Priority priority = ImportanceMapper.INSTANCE.toDomain(request.importance());
+        Priority newPriority = ImportanceMapper.INSTANCE.toDomain(request.importance());
+        Long taskId = request.taskId();
+        Long newCreatorId = request.creatorId();
+        LocalDateTime newCreateDateTime = request.createDateTime();
+        LocalDateTime newDeadlineDateTime = request.deadlineDateTime();
 
+        Long newAssignedUserId = request.assignedUserId();
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));
-        if (task.status() == Status.DONE && status != Status.IN_PROGRESS) {
+
+        if (task.status() == Status.DONE) {
             throw new TaskOperationException("Cannot update task. Status: " + task.status());
         }
 
-        // Check if request starts the task
-        if (task.status() != Status.IN_PROGRESS && status == Status.IN_PROGRESS) {
-            assertCanStartTask(task);
-        }
-
-        LocalDateTime doneDateTime = null;
-        if (status == Status.DONE) {
-            assertCanFinishTask(task);
-            doneDateTime = LocalDateTime.now();
+        if (!newAssignedUserId.equals(task.id()) && task.status().equals(Status.IN_PROGRESS)) {
+            assertUserCanStartNewTask(newAssignedUserId, taskId);
         }
 
         task = new Task(
                 task.id(),
-                request.creatorId(),
-                request.assignedUserId(),
-                status,
-                request.createDateTime(),
-                request.deadlineDateTime(),
-                priority,
-                doneDateTime);
+                newCreatorId,
+                newAssignedUserId,
+                task.status(),
+                newCreateDateTime,
+                newDeadlineDateTime,
+                newPriority,
+                task.doneDateTime());
         task = repository.update(task);
 
         return TaskMapper.MapToDto(task);
@@ -101,7 +103,7 @@ public class DefaultTaskService implements TaskService {
             return;
         }
 
-        assertCanStartTask(task);
+        assertUserCanStartNewTask(task.assignedUserId(), task.id());
 
         var startedTask = new Task(
                 task.id(),
@@ -123,7 +125,7 @@ public class DefaultTaskService implements TaskService {
             return;
         }
 
-        assertCanFinishTask(task);
+        assertUserCanFinishTask(task.assignedUserId(), task.id());
 
         var finishedTask = new Task(
                 task.id(),
@@ -138,21 +140,21 @@ public class DefaultTaskService implements TaskService {
         repository.update(finishedTask);
     }
 
-    private void assertCanStartTask(Task taskToStart) {
-        if (taskToStart.assignedUserId() == null) {
-            throw new TaskOperationException("Cannot start task with id=" + taskToStart.id() + " -- user is not assigned");
+    private void assertUserCanStartNewTask(Long userId, Long taskId) {
+        if (userId == null) {
+            throw new TaskOperationException("Cannot start task with id=" + taskId + " -- user is not assigned");
         }
 
         long numberOfTasks = repository.countTasksByAssignedUserIdAndStatus(
-                taskToStart.assignedUserId(), Status.IN_PROGRESS);
+                userId, Status.IN_PROGRESS);
         if (numberOfTasks >= userMaxTasks) {
-            throw new TaskOperationException("Cannot start task for user with id=" + taskToStart.assignedUserId() + " -- already has " + userMaxTasks + " tasks");
+            throw new TaskOperationException("Cannot start task for user with id=" + userId + " -- already has " + userMaxTasks + " tasks");
         }
     }
 
-    private void assertCanFinishTask(Task taskToFinish) {
-        if (taskToFinish.assignedUserId() == null) {
-            throw new TaskOperationException("Cannot finish task with id=" + taskToFinish.id() + " -- user is not assigned");
+    private void assertUserCanFinishTask(Long userId, Long taskId) {
+        if (userId == null) {
+            throw new TaskOperationException("Cannot finish task with id=" + taskId + " -- user is not assigned");
         }
     }
 }
