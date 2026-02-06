@@ -1,5 +1,6 @@
 package org.example;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,13 +11,17 @@ public class PostgresTaskRepository implements TaskRepository {
 
     private final JpaTaskRepository taskRepository;
 
-    public PostgresTaskRepository(JpaTaskRepository taskRepository) {
+    private final TaskMapper mapper;
+
+    @Autowired
+    public PostgresTaskRepository(JpaTaskRepository taskRepository, TaskMapper mapper) {
         this.taskRepository = taskRepository;
+        this.mapper = mapper;
     }
 
     @Override
     public List<Task> getAllTasks() {
-        return taskRepository.findAll().stream().map(this::mapToTask).toList();
+        return taskRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     @Override
@@ -26,55 +31,29 @@ public class PostgresTaskRepository implements TaskRepository {
 
     @Override
     public Optional<Task> getTaskById(long id) {
-        return taskRepository.findById(id).map(this::mapToTask);
+        return taskRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override
     public Task create(Task taskToCreate) {
-        var entityToCreate = mapToEntity(taskToCreate);
+        var entityToCreate = mapper.toEntity(taskToCreate);
         entityToCreate.setId(null);
 
         TaskEntity savedEntity = taskRepository.save(entityToCreate);
-        return mapToTask(savedEntity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
     public Task update(Task taskToUpdate) {
-        var entityToUpdate = mapToEntity(taskToUpdate);
+        var entityToUpdate = mapper.toEntity(taskToUpdate);
 
         TaskEntity updatedEntity = taskRepository.save(entityToUpdate);
-        return mapToTask(updatedEntity);
+        return mapper.toDomain(updatedEntity);
     }
 
     @Override
     public void delete(Task taskToDelete) {
-        var entityToDelete = mapToEntity(taskToDelete);
-
+        var entityToDelete = mapper.toEntity(taskToDelete);
         taskRepository.delete(entityToDelete);
-    }
-
-    private Task mapToTask(TaskEntity entity) {
-        return new Task(
-                entity.getId(),
-                entity.getCreatorId(),
-                entity.getAssignedUserId(),
-                entity.getStatus(),
-                entity.getCreateDateTime(),
-                entity.getDeadlineDateTime(),
-                entity.getPriority(),
-                entity.getDoneDateTime()
-        );
-    }
-
-    private TaskEntity mapToEntity(Task task) {
-        return new TaskEntity(
-                task.id(),
-                task.creatorId(),
-                task.assignedUserId(),
-                task.status(),
-                task.createDateTime(),
-                task.deadlineDateTime(),
-                task.priority(),
-                task.doneDateTime());
     }
 }

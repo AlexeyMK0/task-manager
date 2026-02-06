@@ -2,6 +2,8 @@ package org.example.Operations;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import org.example.Model.TaskImportance;
+import org.example.Model.TaskStatus;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +17,7 @@ public abstract class UpdateTask {
             @Future
             LocalDateTime deadlineDateTime,
             @NotNull
-            String importance,
-            String status) {}
+            TaskImportance importance,
+            @NotNull
+            TaskStatus status) {}
 }

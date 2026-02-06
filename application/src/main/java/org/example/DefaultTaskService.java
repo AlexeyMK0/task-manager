@@ -1,9 +1,10 @@
 package org.example;
 
 import org.example.Dto.TaskDto;
-import org.example.Exceptions.InvalidArgumentException;
 import org.example.Exceptions.TaskNotFoundException;
 import org.example.Exceptions.TaskOperationException;
+import org.example.Mapping.ImportanceMapper;
+import org.example.Mapping.StatusMapper;
 import org.example.Mapping.TaskMapper;
 import org.example.Operations.*;
 
@@ -35,12 +36,7 @@ public class DefaultTaskService implements TaskService {
 
     @Override
     public TaskDto createTask(CreateTask.Request request) {
-        Priority priority;
-        try {
-            priority = Priority.valueOf(request.importance());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidArgumentException("Unknown importance level: " + request.importance());
-        }
+        Priority priority = ImportanceMapper.INSTANCE.toDomain(request.importance());
 
         Task task = new Task(
                 null,
@@ -56,19 +52,8 @@ public class DefaultTaskService implements TaskService {
     }
 
     public TaskDto updateTask(UpdateTask.Request request) {
-        Status status;
-        try {
-            status = Status.valueOf(request.status());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidArgumentException("Unknown status " + request.status());
-        }
-
-        Priority priority;
-        try {
-            priority = Priority.valueOf(request.importance());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidArgumentException("Unknown importance level " + request.importance());
-        }
+        Status status = StatusMapper.INSTANCE.toDomain(request.status());
+        Priority priority = ImportanceMapper.INSTANCE.toDomain(request.importance());
 
         Task task = repository.getTaskById(request.taskId())
                 .orElseThrow(() -> new TaskNotFoundException(request.taskId()));

@@ -2,7 +2,7 @@ package org.example.Operations;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import org.example.Dto.TaskDto;
+import org.example.Model.TaskImportance;
 
 import java.time.LocalDateTime;
 
@@ -15,5 +15,5 @@ public abstract class CreateTask {
             @Future
             LocalDateTime deadlineDateTime,
             @NotNull
-            String importance) {}
+            TaskImportance importance) {}
 }

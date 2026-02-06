@@ -11,8 +11,8 @@ public class TaskMapper {
                 task.assignedUserId(),
                 task.createDateTime(),
                 task.deadlineDateTime(),
-                task.priority().name(),
-                task.status().name(),
+                ImportanceMapper.INSTANCE.toApi(task.priority()),
+                StatusMapper.INSTANCE.toApi(task.status()),
                 task.doneDateTime());
     }
 }
